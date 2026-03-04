@@ -1,0 +1,33 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+body{
+    background-color: #f5f3f3;
+}
+
+.hero-section {
+    background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://picsum.photos/1920/600?grayscale');
+    background-size: cover;
+    background-position: center;
+    color: white;
+    padding: 100px 0;
+}
+.product-card img {
+    transition: transform 0.3s ease;
+}
+.product-card:hover img {
+    transform: scale(1.05);
+}
+.login-page {
+    background: linear-gradient(135deg, #f5f3f3 0%, #e8ecef 100%);
+}
+.checkout-page {
+    background: linear-gradient(135deg, #f5f3f3 0%, #e8ecef 100%);
+}
+.auth-card {
+    max-width: 480px;
+    border-radius: 1rem;
+}
