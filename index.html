@@ -1,0 +1,389 @@
+﻿<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>AS Store | Home</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Syne:wght@600;700;800&display=swap"
+        rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div id="app">
+        <nav class="navbar navbar-expand-md navbar-dark store-nav sticky-top shadow-sm">
+            <div class="container">
+                <a class="navbar-brand fw-bold" href="#" @click.prevent="showHome">
+                    <span class="brand-mark">AS</span> STORE
+                </a>
+                <button class="navbar-toggler border-0" type="button" data-bs-toggle="offcanvas"
+                    data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="offcanvas offcanvas-end text-bg-dark" tabindex="-1" id="offcanvasNavbar"
+                    aria-labelledby="offcanvasNavbarLabel">
+                    <div class="offcanvas-header border-bottom border-secondary">
+                        <h5 class="offcanvas-title fw-bold" id="offcanvasNavbarLabel"><span
+                                class="brand-mark">AS</span> STORE</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"
+                            aria-label="Close"></button>
+                    </div>
+                    <div class="offcanvas-body">
+                        <ul class="navbar-nav ms-auto align-items-md-center gap-3 gap-md-0 mt-3 mt-md-0">
+                            <li class="nav-item">
+                                <a class="nav-link" :class="{ active: isHomeVisible }" href="#"
+                                    @click.prevent="showHome" data-bs-dismiss="offcanvas">Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#shop" @click="showHome" data-bs-dismiss="offcanvas">Shop</a>
+                            </li>
+                            <li class="nav-item">
+                                <button class="btn btn-outline-light btn-sm position-relative w-100 w-md-auto ms-md-3 cart-nav-btn"
+                                    @click="showCart" :class="{ 'cart-shake': isCartShaking }" data-bs-toggle="tooltip"
+                                    data-bs-dismiss="offcanvas" :data-bs-title="'Total: $' + cartTotal.toFixed(2)">
+                                    <i class="bi bi-cart3"></i> Cart
+                                    <span :key="cartCount"
+                                        class="position-absolute top-0 start-100 badge rounded-pill bg-danger badge-pop">
+                                        {{ cartCount }}
+                                    </span>
+                                </button>
+                            </li>
+                            <li class="nav-item ms-md-3" v-if="isLoggedIn">
+                                <div class="d-md-flex align-items-md-center text-center text-md-start user-nav-block">
+                                    <div class="user-pill me-md-2 mb-2 mb-md-0" :title="userEmail">
+                                        <span class="user-pill-avatar">{{ userInitial }}</span>
+                                        <span class="user-pill-text">
+                                            <small>Hi, {{ userDisplayName }}</small>
+                                            <span class="user-pill-email">{{ userEmail }}</span>
+                                        </span>
+                                    </div>
+                                    <button class="btn btn-outline-warning btn-sm w-100 w-md-auto" @click="logout"
+                                        data-bs-dismiss="offcanvas">Logout</button>
+                                </div>
+                            </li>
+                            <li class="nav-item ms-md-3 " v-else>
+                                <a class="btn btn-outline-light btn-sm w-100 w-md-auto mx-md-2" href="./login.html">Login</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <header class="hero-section text-center" v-if="isHomeVisible">
+            <div class="hero-glow hero-glow-left"></div>
+            <div class="hero-glow hero-glow-right"></div>
+            <div class="container">
+                <span class="hero-kicker">Curated Essentials</span>
+                <h1 class="display-3 fw-bold mb-3">Designed To Upgrade Everyday Living</h1>
+                <p class="lead mb-4">Shop high-quality picks across tech, home, and wellness in one clean storefront.</p>
+                <div class="row justify-content-center">
+                    <div class="col-lg-7">
+                        <div class="input-group input-group-lg hero-search shadow-sm">
+                            <span class="input-group-text border-0"><i class="bi bi-search"></i></span>
+                            <input type="text" v-model="searchQuery" class="form-control border-0"
+                                placeholder="Search products..." aria-label="Search products">
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex flex-wrap justify-content-center gap-2 mt-4">
+                    <button class="btn btn-light hero-cta-btn px-4 rounded-pill" @click="selectedCategory = 'All'">
+                        Browse All
+                    </button>
+                    <button class="btn btn-outline-light hero-cta-btn px-4 rounded-pill" @click="showCart">
+                        View Cart
+                    </button>
+                </div>
+                <div class="hero-stats mt-4 d-flex flex-wrap justify-content-center gap-2">
+                    <span class="hero-chip"><i class="bi bi-grid me-2"></i>{{ products.length }} products</span>
+                    <span class="hero-chip"><i class="bi bi-tags me-2"></i>{{ categories.length - 1 }} categories</span>
+                    <span class="hero-chip"><i class="bi bi-bag-check me-2"></i>{{ cartCount }} in cart</span>
+                </div>
+            </div>
+        </header>
+
+        <div id="shop" v-if="isHomeVisible"></div>
+
+        <main class="container my-5 store-main" v-if="isHomeVisible">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center collection-header mb-4">
+                <div>
+                    <h2 class="fw-bold mb-1">Our Collection</h2>
+                    <p class="text-muted mb-0">Find products that match your style and budget.</p>
+                </div>
+                <span class="result-pill mt-3 mt-md-0">{{ filteredProducts.length }} products found</span>
+            </div>
+
+            <div class="row" v-if="isHomeVisible">
+                <div class="col-lg-3 mb-4">
+                    <button class="btn btn-dark w-100 d-lg-none mb-3 py-2 shadow-sm mobile-filter-btn" type="button"
+                        data-bs-toggle="offcanvas" data-bs-target="#sidebarOffcanvas">
+                        <i class="bi bi-sliders2 me-2"></i> Filters & Categories
+                    </button>
+
+                    <div class="offcanvas-lg offcanvas-start border-0" tabindex="-1" id="sidebarOffcanvas">
+                        <div class="offcanvas-header bg-dark text-white d-lg-none">
+                            <h5 class="offcanvas-title fw-bold">Store Filters</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"
+                                data-bs-target="#sidebarOffcanvas"></button>
+                        </div>
+                        <div class="offcanvas-body p-0">
+                            <div class="card border-0 shadow-sm sticky-top w-100 filter-panel">
+                                <div class="card-body">
+                                    <h5 class="fw-bold mb-3">Categories</h5>
+                                    <div class="list-group list-group-flush">
+                                        <button v-for="cat in categories" :key="cat" @click="applyCategory(cat)"
+                                            :class="['list-group-item', 'list-group-item-action', 'border-0', 'px-2', 'rounded', 'category-pill', selectedCategory === cat ? 'active text-white' : '']"
+                                            type="button">
+                                            {{ cat }}
+                                        </button>
+                                    </div>
+                                    <hr>
+                                    <h5 class="fw-bold mb-3">Price Range</h5>
+                                    <div class="px-2">
+                                        <input type="range" class="form-range" v-model.number="maxPrice" min="0"
+                                            max="250" step="1">
+                                        <div class="d-flex justify-content-between small text-muted mt-2">
+                                            <span>$0</span>
+                                            <span class="fw-bold text-dark">Up to ${{ maxPrice }}</span>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-outline-secondary btn-sm w-100 mt-4 rounded-pill" @click="clearFilters">
+                                        <i class="bi bi-x-circle me-1"></i> Clear Filters
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-9">
+                    <div class="row g-4">
+                        <div class="col-12 col-sm-6 col-xl-4 mobile-product-col" v-for="product in filteredProducts"
+                            :key="product.id">
+                            <div class="card h-100 shadow-sm border-0 product-card">
+                                <div class="ratio ratio-1x1 bg-light overflow-hidden product-image-wrap">
+                                    <img :src="product.image" class="card-img-top object-fit-contain p-3"
+                                        :alt="product.name" loading="lazy" decoding="async">
+                                </div>
+
+                                <div class="card-body d-flex flex-column p-2 p-md-3">
+                                    <div class="d-md-flex justify-content-between align-items-start mb-2">
+                                        <h5 class="card-title fw-bold fs-6 mb-1 mb-md-0 text-truncate">{{ product.name
+                                            }}</h5>
+                                        <span class="badge rating-badge x-small d-inline-flex align-items-center">
+                                            <i class="bi bi-star-fill me-1"></i>{{ product.rating }}
+                                        </span>
+                                    </div>
+                                    <p class="card-text text-muted small flex-grow-1 product-description">
+                                        {{ product.description }}
+                                    </p>
+                                    <div
+                                        class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mt-2 mt-md-3">
+                                        <span class="text-dark fw-bold fs-6 fs-md-5 mb-2 mb-md-0 price-tag">${{ product.price
+                                            }}</span>
+                                        <button @click="addToCart(product)"
+                                            class="btn btn-dark btn-sm rounded-pill px-3 card-add-btn"
+                                            :disabled="product.stock === 0">
+                                            {{ product.stock === 0 ? 'Out of Stock' : 'Add to Cart' }}
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-footer bg-transparent border-0 pt-0 pb-3">
+                                    <div class="progress stock-progress" style="height: 5px;">
+                                        <div class="progress-bar" :style="{ width: product.stock + '%' }">
+                                        </div>
+                                    </div>
+                                    <small class="text-muted mt-1 d-block text-end">Only {{ product.stock }}
+                                        left</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="filteredProducts.length === 0 && isHomeVisible" class="text-center py-5 empty-results">
+                <i class="bi bi-box-seam display-1 text-secondary"></i>
+                <p class="mt-3 lead">No products match your search.</p>
+            </div>
+        </main>
+
+        <div class="container my-5 cart-section" v-if="isCartVisible">
+            <h2 class="fw-bold mb-4">Your Shopping Cart</h2>
+            <div v-if="cart.length > 0">
+                <div class="d-none d-md-block">
+                    <table class="table table-hover align-middle shadow-sm rounded overflow-hidden">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Product</th>
+                                <th class="text-center">Price</th>
+                                <th class="text-center">Quantity</th>
+                                <th class="text-center">Total</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="item in cart" :key="item.id">
+                                <td><span class="fw-semibold">{{ item.name }}</span></td>
+                                <td class="text-center">${{ item.price.toFixed(2) }}</td>
+                                <td class="text-center">
+                                    <div class="d-flex justify-content-center align-items-center">
+                                        <button @click="decreaseQty(item)"
+                                            class="btn btn-sm btn-outline-danger py-0 px-2">-</button>
+                                        <span class="mx-3 fw-bold">{{ item.quantity }}</span>
+                                        <button @click="increaseQty(item)"
+                                            class="btn btn-sm btn-outline-success py-0 px-2"
+                                            :disabled="getProductStock(item.id) === 0">+</button>
+                                    </div>
+                                </td>
+                                <td class="text-center fw-bold text-danger">${{ (item.price * item.quantity).toFixed(2)
+                                    }}</td>
+                                <td class="text-end">
+                                    <button @click="removeFromCart(item.id)" class="btn btn-link text-danger p-0"
+                                        title="Remove">
+                                        <i class="bi bi-trash3 fs-5"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="d-md-none">
+                    <div v-for="item in cart" :key="item.id" class="card mb-3 border-0 shadow-sm mobile-cart-card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="fw-bold mb-0 text-truncate" style="max-width: 80%;">{{ item.name }}</h6>
+                                <button @click="removeFromCart(item.id)" class="btn btn-sm text-danger p-0">
+                                    <i class="bi bi-trash3"></i>
+                                </button>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <small class="text-muted d-block">Price: ${{ item.price.toFixed(2) }}</small>
+                                    <span class="fw-bold text-danger fs-5">${{ (item.price * item.quantity).toFixed(2)
+                                        }}</span>
+                                </div>
+                                <div class="d-flex align-items-center bg-light rounded px-2 py-1 mobile-qty-stepper">
+                                    <button @click="decreaseQty(item)"
+                                        class="btn btn-sm text-danger p-0 mobile-step-btn">-</button>
+                                    <span class="mx-3 fw-bold small">{{ item.quantity }}</span>
+                                    <button @click="increaseQty(item)" class="btn btn-sm text-success p-0 mobile-step-btn"
+                                        :disabled="getProductStock(item.id) === 0">+</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-4 align-items-center d-none d-md-flex">
+                    <div class="col-md-6 mb-4 mb-md-0 text-center text-md-start">
+                        <button class="btn btn-outline-dark" @click="showHome">
+                            <i class="bi bi-arrow-left me-2"></i> Continue Shopping
+                        </button>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <div class="card border-0 bg-light p-3 shadow-sm d-inline-block w-100 w-md-auto">
+                            <h4 class="mb-0">
+                                Grand Total: <span class="text-danger fw-bold">${{ cartTotal.toFixed(2) }}</span>
+                            </h4>
+                            <button class="btn btn-danger btn-lg w-100 mt-3 shadow-sm" @click="goToCheckout">
+                                <i class="bi bi-credit-card me-2"></i> Checkout
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mobile-cart-summary d-md-none">
+                    <div class="mobile-cart-summary-main">
+                        <div>
+                            <small class="text-muted d-block">Grand Total</small>
+                            <span class="mobile-cart-total">${{ cartTotal.toFixed(2) }}</span>
+                        </div>
+                        <button class="btn btn-danger rounded-pill px-4 py-2" @click="goToCheckout">
+                            Checkout
+                        </button>
+                    </div>
+                    <button class="btn btn-outline-dark w-100 rounded-pill mt-2" @click="showHome">
+                        Continue Shopping
+                    </button>
+                </div>
+            </div>
+
+            <div v-else class="text-center py-5">
+                <div class="mb-4">
+                    <i class="bi bi-cart-x text-muted" style="font-size: 5rem;"></i>
+                </div>
+                <h3>Your cart is empty</h3>
+                <p class="text-muted mb-4">Looks like you haven't added anything to your cart yet.</p>
+                <button class="btn btn-danger px-4 rounded-pill" @click="showHome">Explore Products</button>
+            </div>
+        </div>
+
+        <transition name="slide-in">
+            <button class="btn btn-dark fab-btn back-to-top border-0" @click="scrollToTop" v-if="isScrolled"
+                data-bs-toggle="tooltip" data-bs-title="Back to Top">
+                <i class="bi bi-arrow-up fs-4"></i>
+            </button>
+        </transition>
+
+        <transition name="slide-in">
+            <button class="btn btn-danger fab-btn floating-cart border-0" :class="{ 'cart-shake': isCartShaking }"
+                @click="showCart" v-if="!isCartVisible && isScrolled" data-bs-toggle="tooltip"
+                :data-bs-title="'View Cart - Total: $' + cartTotal.toFixed(2)">
+                <i class="bi bi-cart3 fs-4"></i>
+                <span :key="cartCount" class="position-absolute top-0 start-100 badge rounded-pill bg-dark badge-pop"
+                    v-if="cartCount > 0">
+                    {{ cartCount }}
+                </span>
+            </button>
+        </transition>
+
+        <nav class="mobile-quickbar d-md-none" aria-label="Mobile quick actions">
+            <button class="mobile-quickbar-btn" :class="{ active: isHomeVisible }" @click="showHome">
+                <i class="bi bi-house-door"></i>
+                <span>Home</span>
+            </button>
+            <button class="mobile-quickbar-btn" v-if="isHomeVisible" data-bs-toggle="offcanvas"
+                data-bs-target="#sidebarOffcanvas" aria-controls="sidebarOffcanvas">
+                <i class="bi bi-sliders2"></i>
+                <span>Filters</span>
+            </button>
+            <button class="mobile-quickbar-btn" v-else @click="showHome">
+                <i class="bi bi-bag"></i>
+                <span>Shop</span>
+            </button>
+            <button class="mobile-quickbar-btn position-relative" :class="{ active: isCartVisible }" @click="showCart">
+                <i class="bi bi-cart3"></i>
+                <span>Cart</span>
+                <span class="mobile-quickbar-badge" v-if="cartCount > 0">{{ cartCount }}</span>
+            </button>
+        </nav>
+
+        <footer class="bg-dark text-white py-5 mt-auto">
+            <div class="container text-center">
+                <p class="mb-2">&copy; {{ currentYear }} <span class="text-danger fw-bold">Ahmed M.Saad</span>. All
+                    rights reserved.</p>
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="#" class="text-white-50 text-decoration-none small">Privacy Policy</a>
+                    <span class="text-white-50">|</span>
+                    <a href="#" class="text-white-50 text-decoration-none small">Terms of Service</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="products.js"></script>
+    <script src="auth.js"></script>
+    <script src="main.js"></script>
+</body>
+
+</html>
