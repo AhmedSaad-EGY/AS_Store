@@ -14,6 +14,18 @@ createApp({
       isCartShaking: false,
       isScrolled: false,
       user: window.ASAuth ? window.ASAuth.getUser() : null,
+      homeViewAnimationClass: "",
+      cartViewAnimationClass: "",
+      resultsAnimationClass: "",
+      filterPanelAnimationClass: "",
+      searchAnimationClass: "",
+      noResultsAnimationClass: "",
+      animatedProductId: null,
+      productActionAnimationClass: "",
+      animatedCartItemId: null,
+      cartItemActionAnimationClass: "",
+      animationTimers: {},
+      isLogoutConfirmOpen: false,
     };
   },
   watch: {
@@ -22,6 +34,28 @@ createApp({
         localStorage.setItem("as_store_cart", JSON.stringify(newCart));
       },
       deep: true,
+    },
+    searchQuery() {
+      this.animateResults("animate__fadeIn");
+    },
+    selectedCategory() {
+      this.animateResults("animate__fadeIn");
+      this.runAnimation(
+        "filterPanelAnimationClass",
+        "animate__pulse",
+        520,
+      );
+    },
+    maxPrice() {
+      this.animateResults("animate__fadeIn");
+    },
+    filteredProducts(newProducts, oldProducts) {
+      if (!oldProducts || newProducts.length !== oldProducts.length) {
+        this.noResultsAnimationClass = "";
+      }
+      if (newProducts.length === 0) {
+        this.runAnimation("noResultsAnimationClass", "animate__fadeIn", 650);
+      }
     },
   },
   computed: {
@@ -79,8 +113,78 @@ createApp({
     },
   },
   methods: {
+    runAnimation(stateKey, animationName, duration = 650) {
+      this[stateKey] = `animate__animated animate__faster ${animationName}`;
+
+      if (this.animationTimers[stateKey]) {
+        clearTimeout(this.animationTimers[stateKey]);
+      }
+
+      this.animationTimers[stateKey] = setTimeout(() => {
+        this[stateKey] = "";
+      }, duration);
+    },
+    animateResults(animationName = "animate__fadeIn") {
+      this.runAnimation("resultsAnimationClass", animationName, 550);
+    },
+    onSearchInput() {
+      this.runAnimation("searchAnimationClass", "animate__pulse", 480);
+    },
+    onPriceInput() {
+      this.runAnimation("filterPanelAnimationClass", "animate__pulse", 480);
+    },
+    animateProductAction(productId, animationName = "animate__pulse") {
+      this.animatedProductId = productId;
+      this.productActionAnimationClass =
+        `animate__animated animate__faster ${animationName}`;
+
+      if (this.animationTimers.productActionAnimationClass) {
+        clearTimeout(this.animationTimers.productActionAnimationClass);
+      }
+
+      this.animationTimers.productActionAnimationClass = setTimeout(() => {
+        this.animatedProductId = null;
+        this.productActionAnimationClass = "";
+      }, 600);
+    },
+    animateCartItemAction(itemId, animationName = "animate__pulse") {
+      this.animatedCartItemId = itemId;
+      this.cartItemActionAnimationClass =
+        `animate__animated animate__faster ${animationName}`;
+
+      if (this.animationTimers.cartItemActionAnimationClass) {
+        clearTimeout(this.animationTimers.cartItemActionAnimationClass);
+      }
+
+      this.animationTimers.cartItemActionAnimationClass = setTimeout(() => {
+        this.animatedCartItemId = null;
+        this.cartItemActionAnimationClass = "";
+      }, 550);
+    },
+    getProductCardAnimationClass(productId) {
+      return this.animatedProductId === productId
+        ? this.productActionAnimationClass
+        : "";
+    },
+    getCartItemAnimationClass(itemId) {
+      return this.animatedCartItemId === itemId
+        ? this.cartItemActionAnimationClass
+        : "";
+    },
+    clearAnimationTimers() {
+      Object.values(this.animationTimers).forEach((timerId) => {
+        clearTimeout(timerId);
+      });
+      this.animationTimers = {};
+    },
     syncAuthState() {
       this.user = window.ASAuth ? window.ASAuth.getUser() : null;
+    },
+    openLogoutConfirm() {
+      this.isLogoutConfirmOpen = true;
+    },
+    cancelLogoutConfirm() {
+      this.isLogoutConfirmOpen = false;
     },
     closeSidebarOffcanvas() {
       if (window.innerWidth >= 992 || typeof bootstrap === "undefined") return;
@@ -100,11 +204,13 @@ createApp({
       this.isHomeVisible = true;
       this.isCartVisible = false;
       this.scrollToTop();
+      this.runAnimation("homeViewAnimationClass", "animate__fadeInLeft", 700);
     },
     showCart() {
       this.isHomeVisible = false;
       this.isCartVisible = true;
       this.scrollToTop();
+      this.runAnimation("cartViewAnimationClass", "animate__fadeInRight", 700);
     },
     getProductById(productId) {
       return this.products.find((product) => product.id === productId);
@@ -129,6 +235,7 @@ createApp({
       }
 
       product.stock--;
+      this.animateProductAction(product.id, "animate__pulse");
 
       // Trigger shake animation
       this.isCartShaking = true;
@@ -143,6 +250,7 @@ createApp({
 
       item.quantity++;
       product.stock--;
+      this.animateCartItemAction(item.id, "animate__pulse");
     },
     decreaseQty(item) {
       const product = this.getProductById(item.id);
@@ -151,6 +259,7 @@ createApp({
       if (item.quantity > 1) {
         item.quantity--;
         product.stock++;
+        this.animateCartItemAction(item.id, "animate__pulse");
       } else {
         this.removeFromCart(item.id);
       }
@@ -187,12 +296,15 @@ createApp({
         window.ASAuth.logout();
       }
       this.syncAuthState();
+      this.isLogoutConfirmOpen = false;
     },
     clearFilters() {
       this.selectedCategory = "All";
       this.maxPrice = 250;
       this.searchQuery = "";
       this.closeSidebarOffcanvas();
+      this.runAnimation("filterPanelAnimationClass", "animate__pulse", 520);
+      this.runAnimation("searchAnimationClass", "animate__pulse", 480);
     },
     handleScroll() {
       const scrollTop =
@@ -271,6 +383,7 @@ createApp({
     this.initTooltips();
     window.addEventListener("scroll", this.handleScroll);
     this.handleScroll(); // Initial check for scroll position
+    this.runAnimation("homeViewAnimationClass", "animate__fadeIn", 700);
 
     // Reconcile stock levels from the loaded cart
     // Check for cart data from session storage (e.g., after login redirect)
@@ -288,5 +401,6 @@ createApp({
   },
   beforeUnmount() {
     window.removeEventListener("scroll", this.handleScroll);
+    this.clearAnimationTimers();
   },
 }).mount("#app");
